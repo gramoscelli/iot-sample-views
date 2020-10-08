@@ -5,36 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-/*
-  RESTfull /user Routes:
-
-+-----------+------------------+--------------+---------------------------------------------+------------+
-| Method    | URI              | Name         | Action                                      | Middleware |
-+-----------+------------------+--------------+---------------------------------------------+------------+
-| GET|HEAD  | user             | user.index   | App\Http\Controllers\UserController@index   | web        |
-| POST      | user             | user.store   | App\Http\Controllers\UserController@store   | web        |
-| GET|HEAD  | user/create      | user.create  | App\Http\Controllers\UserController@create  | web        |
-| GET|HEAD  | user/{user}      | user.show    | App\Http\Controllers\UserController@show    | web        |
-| PUT|PATCH | user/{user}      | user.update  | App\Http\Controllers\UserController@update  | web        |
-| DELETE    | user/{user}      | user.destroy | App\Http\Controllers\UserController@destroy | web        |
-| GET|HEAD  | user/{user}/edit | user.edit    | App\Http\Controllers\UserController@edit    | web        |
-+-----------+------------------+--------------+---------------------------------------------+------------+
-
-
-*/
-
 class UserController extends Controller
 {
-    /**
+/**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        // load all the users table in $users (collection)
         $users = User::all();
-        // return the user.index view
         return view('user.index', ['users' => $users]);
     }
 
@@ -45,7 +25,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('user.create');
     }
 
     /**
@@ -56,51 +36,81 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email:rfc,dns',
+            'edad' => 'min:0|integer|max:200',
+            'dni' => 'min:0|integer|max:99999999',
+        ]);
+        if (User::create($validateData)) {        
+            session()->flash('status', 'El usuario ha sido dado de alta');        
+            return redirect(route('user.index'));    
+        }
+        session()->flash('status', 'No se pudo dar de alta el usuario. Vuelva a intentarlo');
+        return back()->withInput();
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user)
     {
-        //
+        
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(User $user)
     {
-        //
+        return view('user.edit', ['user' => $user]);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
-        //
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email:rfc,dns',
+            'edad' => 'min:0|integer|max:200',
+            'dni' => 'min:0|integer|max:99999999',
+        ]);
+        $user->name = $request->name;
+        $user->dni = $request->dni;
+        $user->edad = $request->edad;
+        $user->email = $request->email;
+        $user->save();
+
+        return redirect(route('user.index'));
+
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  \App\User  $user
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        //
+        if ($user->delete()) {
+            session()->flash('status', 'El dispositivo ha sido borrado');
+            return redirect(route('user.index'));
+        }
+        session()->flash('status', 'No se pudo borrar el dispositivo. Vuelva a intentarlo');
+        return back()->withInput();
+
     }
 }

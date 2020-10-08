@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ClientController;
+use App\Model\Client;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +25,7 @@ Route::get('/home', function () {
 });
 
 Route::resource('/user', UserController::class);
+
+Route::get('/client', [ClientController::class, 'index']);
+
+
